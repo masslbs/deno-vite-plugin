@@ -22,6 +22,13 @@ export default function denoPlugin(
     configResolved(config) {
       root = config.root;
     },
+    async buildEnd(err?: Error) {
+        // this function is called when the build stops, or when the dev process ends (and only if it ends gracefully?)
+        // or if the server is restarted
+        console.log("build ended!")
+        const cacheArr = Array.from(cache)
+        await fsp.writeFile("./cache.json", JSON.stringify(cacheArr))
+    },
     async resolveId(id, importer) {
       // The "pre"-resolve plugin already resolved it
       if (isDenoSpecifier(id)) return;

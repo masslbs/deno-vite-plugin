@@ -21,8 +21,18 @@ export default function denoPrefixPlugin(
     },
     async resolveId(id, importer) {
       if (id.startsWith("npm:")) {
-        const resolved = await resolveDeno(id, root, lock);
-        if (resolved === null) return;
+        console.log(`prefixPlugin: resolveId for :npm cache.get(${id})->\n${cache.get(id)}`)
+        const cacheResolved = cache.get(id);
+        if (cache.has(id) && !cacheResolved) {
+            console.log("prefix plugin knows of id but can't resolve it here, exiting")
+            return
+        }
+        const resolved = cacheResolved ?? await resolveDeno(id, root, cache, lock);
+        if (resolved === null) {
+            // mark it as unresolvable in cache
+            cache.set(id, null);
+            return;
+        }
 
         // TODO: Resolving custom versions is not supported at the moment
         const actual = resolved.id.slice(0, resolved.id.indexOf("@"));

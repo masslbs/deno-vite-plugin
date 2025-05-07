@@ -59,6 +59,14 @@ export interface DenoResolveResult {
   dependencies: ResolvedInfo["dependencies"];
 }
 
+function log(m: string) {
+    console.log(`resolver.ts: ${m}`)
+}
+
+function resolveLog (m: string) {
+    log(`(resolve deno) ${m}`)
+}
+
 function isResolveError(
   info: NpmResolvedInfo | ResolvedInfo | ExternalResolvedInfo | ResolveError,
 ): info is ResolveError {
@@ -71,10 +79,13 @@ const DENO_BINARY = process.platform === "win32" ? "deno.exe" : "deno";
 export async function resolveDeno(
   id: string,
   cwd: string,
+  cache: Map<string, DenoResolveResult>,
   lock: Lock,
 ): Promise<DenoResolveResult | null> {
+   resolveLog("called") 
   if (!checkedDenoInstall) {
     try {
+        resolveLog("exec async deno --version") 
       await execAsync(`${DENO_BINARY} --version`, { cwd });
       checkedDenoInstall = true;
     } catch {
@@ -89,6 +100,7 @@ export async function resolveDeno(
   // though, so we can use that.
   await lock.acquire();
   const output = await new Promise<string | null>((resolve, reject) => {
+    resolveLog(`exec async deno info --json ${id}`)
     execFile(DENO_BINARY, ["info", "--json", id], { cwd }, (error, stdout) => {
       if (error) {
         if (String(error).includes("Integrity check failed")) {
@@ -128,22 +140,43 @@ export async function resolveDeno(
     return null;
   }
 
+  const setCache = (keys, val) => {
+      const seen = new Map<string, boolean>()
+      keys.forEach(key => {
+          if (seen.has(key)) { return }
+          seen.set(key, true)
+          log(`updating cache for ${key}`)
+          cache.set(key, val)
+      })
+  }
+  const possibleIDs = [id, actualId, redirected]
   lock.release();
   if (mod.kind === "esm") {
-    return {
+    let ret = {
       id: mod.local,
       kind: mod.kind,
       loader: mod.mediaType,
       dependencies: mod.dependencies,
     };
+
+    setCache(possibleIDs, ret)
+
+    return ret
   } else if (mod.kind === "npm") {
-    return {
+    let ret = {
       id: mod.npmPackage,
       kind: mod.kind,
       loader: null,
       dependencies: [],
     };
+
+    setCache(possibleIDs, ret)
+
+    return ret
   } else if (mod.kind === "external") {
+
+    setCache(possibleIDs, null)
+
     // Let vite handle this
     return null;
   }
@@ -184,12 +217,22 @@ export async function resolveViteSpecifier(
     }
   }
 
-  const resolved = cache.get(id) ?? await resolveDeno(id, root, lock);
+  const cacheResolved = cache.get(id);
+  log(`cache.has(${id}) = ${cache.has(id)}; cache.get = ${cacheResolved ? "has object" : "null result"}`)
+  if (cache.has(id) && !cacheResolved) {
+      log(`cache encountered id known to be unresolvable by resolver.ts`)
+      return;
+  }
+  const resolved = cacheResolved ?? await resolveDeno(id, root, cache, lock);
 
   // Deno cannot resolve this
-  if (resolved === null) return;
+  if (resolved === null) {
+      cache.set(id, null)
+      return;
+  }
 
   if (resolved.kind === "npm") {
+    cache.set(id, null)
     return null;
   }
 
