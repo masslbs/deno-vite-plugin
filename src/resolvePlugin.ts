@@ -18,6 +18,7 @@ export default function denoPlugin(
 ): Plugin {
   let root = process.cwd();
 
+  const WRITE_DISK_CACHE = (typeof process.env.NOCACHE === "undefined")
   return {
     name: "deno",
     configResolved(config) {
@@ -26,9 +27,11 @@ export default function denoPlugin(
     async buildEnd(err?: Error) {
         // this function is called when the build stops, or when the dev process ends (and only if it ends gracefully?)
         // or if the server is restarted
-        log("build ended, writing cache.json")
-        const cacheArr = Array.from(cache)
-        await fsp.writeFile("./cache.json", JSON.stringify(cacheArr))
+        if (WRITE_DISK_CACHE) {
+            log("build ended, writing cache.json")
+            const cacheArr = Array.from(cache)
+            await fsp.writeFile("./cache.json", JSON.stringify(cacheArr))
+        }
     },
     async resolveId(id, importer) {
       // The "pre"-resolve plugin already resolved it
