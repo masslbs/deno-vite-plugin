@@ -59,12 +59,15 @@ export interface DenoResolveResult {
   dependencies: ResolvedInfo["dependencies"];
 }
 
-function log(m: string) {
-    console.log(`resolver.ts: ${m}`)
+export function log(m: string, context: string = "resolver.ts") {
+    const DEBUG = process.env.DEBUG?.split(",") || []
+    if (DEBUG.includes("deno-vite-plugin") || DEBUG.includes("*")) {
+        console.log(`deno-vite-plugin (${context}): ${m}`)
+    }
 }
 
 function resolveLog (m: string) {
-    log(`(resolve deno) ${m}`)
+    log(m, "resolver.ts:resolveDeno")
 }
 
 function isResolveError(

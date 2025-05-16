@@ -3,6 +3,7 @@ import {
   DenoResolveResult,
   resolveDeno,
   resolveViteSpecifier,
+  log
 } from "./resolver.js";
 import process from "node:process";
 import Lock from "./lock.js";
@@ -21,10 +22,10 @@ export default function denoPrefixPlugin(
     },
     async resolveId(id, importer) {
       if (id.startsWith("npm:")) {
-        console.log(`prefixPlugin: resolveId for :npm cache.get(${id})->\n${cache.get(id)}`)
+        log(`resolveId for :npm cache.get(${id})->\n${cache.get(id)}`, "prefix-plugin.ts")
         const cacheResolved = cache.get(id);
         if (cache.has(id) && !cacheResolved) {
-            console.log("prefix plugin knows of id but can't resolve it here, exiting")
+            log("cache knows id but can't resolve it here, exiting", "prefix-plugin.ts")
             return
         }
         const resolved = cacheResolved ?? await resolveDeno(id, root, cache, lock);

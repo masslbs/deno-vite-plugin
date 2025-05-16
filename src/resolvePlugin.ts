@@ -5,6 +5,7 @@ import {
   isDenoSpecifier,
   parseDenoSpecifier,
   resolveViteSpecifier,
+  log
 } from "./resolver.js";
 import { type Loader, transform } from "esbuild";
 import * as fsp from "node:fs/promises";
@@ -25,7 +26,7 @@ export default function denoPlugin(
     async buildEnd(err?: Error) {
         // this function is called when the build stops, or when the dev process ends (and only if it ends gracefully?)
         // or if the server is restarted
-        console.log("build ended!")
+        log("build ended, writing cache.json")
         const cacheArr = Array.from(cache)
         await fsp.writeFile("./cache.json", JSON.stringify(cacheArr))
     },

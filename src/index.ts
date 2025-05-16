@@ -1,10 +1,9 @@
 import { Plugin } from "vite";
 import prefixPlugin from "./prefixPlugin.js";
 import mainPlugin from "./resolvePlugin.js";
-import { DenoResolveResult } from "./resolver.js";
+import { DenoResolveResult, log } from "./resolver.js";
 import Lock from "./lock.js";
-import * as fs from "node:fs"
-
+import * as fs from "node:fs";
 
 
 export default function deno(): Plugin[] {
@@ -15,7 +14,7 @@ export default function deno(): Plugin[] {
       const cacheMap = new Map(ondiskCacheArr)
       cache = cacheMap as Map<string, DenoResolveResult>
   } catch (err: any) {
-      console.log("error", err)
+      log(`error: ${err}`, "index.ts")
   }
   const lock = new Lock();
 
