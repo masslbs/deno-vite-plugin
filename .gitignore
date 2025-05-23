@@ -87,10 +87,6 @@ web_modules/
 .next
 out
 
-# Nuxt.js build / generate output
-.nuxt
-dist
-
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js
@@ -131,6 +127,3 @@ dist
 
 .vite/
 
-# deno vendor
-vendor/
-dist/
