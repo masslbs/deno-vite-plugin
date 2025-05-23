@@ -1,3 +1,11 @@
+# MassLabs fork
+
+we forked https://github.com/denoland/deno-vite-plugin/ becasue of an open performance issue regarding uncapped `deno info ...` calls
+
+* https://github.com/denoland/deno-vite-plugin/issues/50
+* https://github.com/denoland/deno-vite-plugin/issues/55
+* https://github.com/denoland/deno-vite-plugin/pull/61
+
 # Deno vite plugin
 
 Plugin to enable Deno resolution inside [vite](https://github.com/vitejs/vite).

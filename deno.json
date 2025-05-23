@@ -1,4 +1,7 @@
 {
+"name": "@masslbs/deno-vite-plugin",
+"version": "0.1.0",
+"license": "MIT",
   "unstable": ["sloppy-imports"],
   "lint": {
     "rules": {
