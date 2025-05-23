@@ -1,6 +1,9 @@
 {
 "name": "@masslbs/deno-vite-plugin",
 "version": "0.1.0",
+"exports": {
+  ".": "./src/index.ts"
+},
 "license": "MIT",
   "unstable": ["sloppy-imports"],
   "lint": {
